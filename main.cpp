@@ -49,6 +49,8 @@ enum {
 };
 const vector<uint8_t> VALID_CHARS = {1, 2, 3, 5};
 
+const string VERSION = "0.1.0";
+
 uint64_t calculateMedian(vector<uint64_t> inArray, uint64_t minValue) {
     /*
      Calculates the median of the array ignoring all values < minValue
@@ -669,8 +671,12 @@ int main(int argc, char* argv[]) {
     
     char opt;
     bool helpRequest = false;
-    while((opt = getopt(argc, argv, "hk:K:p:b:e:m:f:iF:V")) != -1) {
+    while((opt = getopt(argc, argv, "hvk:K:p:b:e:m:f:iF:V")) != -1) {
         if(opt == 'h') helpRequest = true;
+        else if(opt == 'v') {
+            printf("fmlrc version %s\n", VERSION.c_str());
+            return 0;
+        }
         else if(opt == 'k') myParams.k = atoi(optarg);
         else if(opt == 'K') myParams.K = atoi(optarg);
         else if(opt == 'p') numThreads = atoi(optarg);
@@ -690,6 +696,7 @@ int main(int argc, char* argv[]) {
     if(argc-optind < 3 || helpRequest) {
         printf("Usage:   fmlrc [options] <comp_msbwt.npy> <long_reads.fa> <corrected_reads.fa>\n");
         printf("Options: -h        print help menu\n");
+        printf("         -v        print version number and exit\n");
         printf("         -k INT    small k-mer size (default: 21)\n");
         printf("         -K INT    large K-mer size (default: 59), set K=k for single pass\n");
         printf("         -p INT    number of correction threads\n");
