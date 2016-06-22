@@ -669,7 +669,7 @@ int main(int argc, char* argv[]) {
     
     char opt;
     bool helpRequest = false;
-    while((opt = getopt(argc, argv, "hk:K:p:b:e:m:f:iF:v")) != -1) {
+    while((opt = getopt(argc, argv, "hk:K:p:b:e:m:f:iF:V")) != -1) {
         if(opt == 'h') helpRequest = true;
         else if(opt == 'k') myParams.k = atoi(optarg);
         else if(opt == 'K') myParams.K = atoi(optarg);
@@ -678,7 +678,7 @@ int main(int argc, char* argv[]) {
         else if(opt == 'e') endID = atoi(optarg);
         else if(opt == 'm') myParams.MIN_COUNT = atoi(optarg);
         else if(opt == 'f') myParams.FRAC = atof(optarg);
-        else if(opt == 'v') myParams.VERBOSE = true;
+        else if(opt == 'V') myParams.VERBOSE = true;
         //MAX_BRANCH_ATTEMPT_LENGTH
         //BRANCH_BUFFER_FACTOR
         //TAIL_BUFFER_FACTOR
@@ -699,7 +699,7 @@ int main(int argc, char* argv[]) {
         printf("         -f FLOAT  dynamic minimum fraction of median to consider a path (default: .10)\n");
         printf("         -i        build a sampled FM-index instead of bit arrays\n");
         printf("         -F INT    FM-index is sampled every 2**<-F> values (default: 8); requires -i\n");
-        printf("         -v        verbose output\n");
+        printf("         -V        verbose output\n");
         return 0;
     }
     
