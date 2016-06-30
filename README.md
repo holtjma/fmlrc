@@ -17,7 +17,7 @@ Prior to running FMLRC, a BWT of the short-read sequencing data needs to be cons
 ## Running FMLRC
 Once a short-read BWT is constructed, the execution of FMLRC is relatively simple:
 
-    ./fmlrc <comp_msbwt.npy> <long_reads.fa> <corrected_reads.fa>
+    ./fmlrc [options] <comp_msbwt.npy> <long_reads.fa> <corrected_reads.fa>
 
 Here is a partial list of the more useful options of FMLRC:
 
