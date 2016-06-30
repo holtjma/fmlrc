@@ -320,7 +320,8 @@ vector<uint8_t> correctionPass(BaseBWT * rle_p, vector<uint8_t> seq_i, Parameter
      */
     
     //this is the only parameter that is dynamic right now
-    uint64_t BRANCH_LIMIT = 2*kmerSize;
+    //uint64_t BRANCH_LIMIT = 2*kmerSize;
+    uint64_t BRANCH_LIMIT = 10*kmerSize;
     
     vector<uint64_t> pu = rle_p->countPileup_i(seq_i, kmerSize);
     
@@ -448,7 +449,127 @@ vector<uint8_t> correctionPass(BaseBWT * rle_p, vector<uint8_t> seq_i, Parameter
                     
                     //printf("bp size: %d\n", bridgePoints.size());
                     if(bridgePoints.size() == 0) {
-                        //no bridges found, do nothing
+                        //no bridges found
+                        //calculate a midpoint
+                        uint64_t midPoint = (uint64_t)((prevFound+x+kmerSize)/2.0);
+                        maxBranchLength = (uint64_t)(myParams.TAIL_BUFFER_FACTOR*(midPoint-prevFound));
+                        
+                        if(maxBranchLength < myParams.MAX_BRANCH_ATTEMPT_LENGTH) {
+                            //try to extend from the left to the middle
+                            bridgePoints = shortAssemble(rle_p, seedKmer, thresh, BRANCH_LIMIT, maxBranchLength);
+                            vector<uint8_t> orig = vector<uint8_t>(seq_i.begin()+prevFound, seq_i.begin()+midPoint);
+                            
+                            //calculate the minimized edit distances
+                            vector<pair<uint64_t, uint64_t> > edScores = vector<pair<uint64_t, uint64_t> >(bridgePoints.size());
+                            uint64_t minScore = 0xFFFFFFFFFFFFFFFF;
+                            for(uint64_t y = 0; y < bridgePoints.size(); y++) {
+                                edScores[y] = editDistance_minimize(orig, bridgePoints[y]);
+                                if(edScores[y].first < minScore) minScore = edScores[y].first;
+                            }
+                            
+                            //clip the strings by the minimized length
+                            bridgePoints_ed.clear();
+                            for(uint64_t y = 0; y < bridgePoints.size(); y++) {
+                                if(edScores[y].first == minScore) bridgePoints_ed.push_back(vector<uint8_t>(bridgePoints[y].begin(), bridgePoints[y].begin()+edScores[y].second));
+                            }
+                            
+                            //if(bridgePoints_ed.size() > 0 && minScore > (midPoint-prevFound)*.4) printf("big ED: %llu %llu\n", minScore, midPoint-prevFound);
+                            
+                            //TODO: make .4 a constant
+                            if(bridgePoints_ed.size() == 0 || minScore > (midPoint-prevFound)*.4) {
+                                //do nothing, we didn't find anything good
+                            }
+                            else if(bridgePoints_ed.size() == 1)
+                            {
+                                //one bridge with smallest edit distance
+                                newCorr.start = prevFound;
+                                newCorr.end = midPoint;
+                                newCorr.seq = bridgePoints_ed[0];
+                                correctionsList.push_back(newCorr);
+                                //printf("left to mid found\n");
+                            }
+                            else {
+                                //multiple with same edit distance, look at overall counts
+                                uint64_t maxCount = 0;
+                                uint64_t maxID = 0;
+                                vector<uint64_t> edPU;
+                                uint64_t summation;
+                                for(uint64_t y = 0; y < bridgePoints_ed.size(); y++) {
+                                    edPU = rle_p->countPileup_i(bridgePoints_ed[y], kmerSize);
+                                    summation = 0;
+                                    summation = accumulate(edPU.begin(), edPU.end(), summation);
+                                    if(summation > maxCount) {
+                                        maxCount = summation;
+                                        maxID = y;
+                                    }
+                                }
+                                
+                                //now save it
+                                newCorr.start = prevFound;
+                                newCorr.end = midPoint;
+                                newCorr.seq = bridgePoints_ed[maxID];
+                                correctionsList.push_back(newCorr);
+                                //printf("left to mid found\n");
+                            }
+                            
+                            //try to extend from the right to the middle
+                            vector<uint8_t> revTarget = string_util::reverseComplement_i(targetKmer);
+                            
+                            //now assemble out from it
+                            bridgePoints = shortAssemble(rle_p, revTarget, thresh, BRANCH_LIMIT, maxBranchLength);
+                            
+                            //remember to rev comp this also
+                            orig = string_util::reverseComplement_i(vector<uint8_t>(seq_i.begin()+midPoint, seq_i.begin()+x+kmerSize));
+                            
+                            edScores = vector<pair<uint64_t, uint64_t> >(bridgePoints.size());
+                            minScore = 0xFFFFFFFFFFFFFFFF;
+                            for(uint64_t y = 0; y < bridgePoints.size(); y++) {
+                                edScores[y] = editDistance_minimize(orig, bridgePoints[y]);
+                                if(edScores[y].first < minScore) minScore = edScores[y].first;
+                            }
+                            
+                            bridgePoints_ed.clear();
+                            for(uint64_t y = 0; y < bridgePoints.size(); y++) {
+                                if(edScores[y].first == minScore) bridgePoints_ed.push_back(vector<uint8_t>(bridgePoints[y].begin(), bridgePoints[y].begin()+edScores[y].second));
+                            }
+                            
+                            //TODO: make .4 a constant
+                            if(bridgePoints_ed.size() == 0 || minScore > (midPoint-prevFound)*.4) {
+                                //do nothing, we didn't find anything good
+                            }
+                            else if(bridgePoints_ed.size() == 1)
+                            {
+                                //one bridge with smallest edit distance
+                                newCorr.start = midPoint;
+                                newCorr.end = x+kmerSize;
+                                newCorr.seq = string_util::reverseComplement_i(bridgePoints_ed[0]);
+                                correctionsList.push_back(newCorr);
+                                //printf("right to mid found\n");
+                            }
+                            else {
+                                //multiple with same edit distance, look at overall counts
+                                uint64_t maxCount = 0;
+                                uint64_t maxID = 0;
+                                vector<uint64_t> edPU;
+                                uint64_t summation;
+                                for(uint64_t y = 0; y < bridgePoints_ed.size(); y++) {
+                                    edPU = rle_p->countPileup_i(bridgePoints_ed[y], kmerSize);
+                                    summation = 0;
+                                    summation = accumulate(edPU.begin(), edPU.end(), summation);
+                                    if(summation > maxCount) {
+                                        maxCount = summation;
+                                        maxID = y;
+                                    }
+                                }
+                                
+                                //now save it
+                                newCorr.start = midPoint;
+                                newCorr.end = x+kmerSize;
+                                newCorr.seq = string_util::reverseComplement_i(bridgePoints_ed[maxID]);
+                                correctionsList.push_back(newCorr);
+                                //printf("right to mid found\n");
+                            }
+                        }
                     }
                     else if(bridgePoints.size() == 1) {
                         //one bridge found, add it on
@@ -603,6 +724,13 @@ CorrectionResults correctRead_job(int id, BaseBWT * rle_p, LongReadFA inputRead,
     
     //2 - correct with small k
     vector<uint8_t> corrected_k = correctionPass(rle_p, seq_i, myParams, myParams.k);
+    /*
+    while(seq_i.size() != corrected_k.size() || !equal(seq_i.begin(), seq_i.end(), corrected_k.begin())) {
+        //printf("looping here\n");
+        seq_i = vector<uint8_t>(corrected_k);
+        corrected_k = correctionPass(rle_p, seq_i, myParams, myParams.k);
+    }
+    */
     
     if(myParams.k == myParams.K) {
         //3a - k = K, skip second pass
@@ -610,6 +738,7 @@ CorrectionResults correctRead_job(int id, BaseBWT * rle_p, LongReadFA inputRead,
         ret.correctedSeq = string_util::itos(corrected_k);
         
         if(myParams.VERBOSE) {
+            //seq_i = string_util::stoi(inputRead.seq);
             vector<uint64_t> c1 = rle_p->countPileup_i(seq_i, myParams.k);
             vector<uint64_t> c2 = rle_p->countPileup_i(corrected_k, myParams.k);
             ret.avgBefore = accumulate(c1.begin(), c1.end(), 0.0)/c1.size();
@@ -626,8 +755,16 @@ CorrectionResults correctRead_job(int id, BaseBWT * rle_p, LongReadFA inputRead,
         
         //4 - translate vector<uint64_t> to string
         ret.correctedSeq = string_util::itos(corrected_K);
+        /*
+        while(seq_i.size() != corrected_K.size() || !equal(seq_i.begin(), seq_i.end(), corrected_K.begin())) {
+            //printf("looping here 2\n");
+            seq_i = vector<uint8_t>(corrected_K);
+            corrected_K = correctionPass(rle_p, seq_i, myParams, myParams.K);
+        }
+        */
         
         if(myParams.VERBOSE) {
+            //seq_i = string_util::stoi(inputRead.seq);
             vector<uint64_t> c1 = rle_p->countPileup_i(seq_i, myParams.k);
             vector<uint64_t> c2 = rle_p->countPileup_i(corrected_K, myParams.k);
             ret.avgBefore = accumulate(c1.begin(), c1.end(), 0.0)/c1.size();
