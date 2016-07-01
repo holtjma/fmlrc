@@ -27,6 +27,7 @@ struct Parameters {
     uint64_t K;
     uint64_t MIN_COUNT;
     uint64_t MAX_BRANCH_ATTEMPT_LENGTH;
+    uint64_t BRANCH_LIMIT_FACTOR;
     double BRANCH_BUFFER_FACTOR;
     double TAIL_BUFFER_FACTOR;
     double FRAC;
@@ -49,7 +50,7 @@ enum {
 };
 const vector<uint8_t> VALID_CHARS = {1, 2, 3, 5};
 
-const string VERSION = "0.1.1";
+const string VERSION = "0.1.2";
 
 uint64_t calculateMedian(vector<uint64_t> inArray, uint64_t minValue) {
     /*
@@ -321,7 +322,11 @@ vector<uint8_t> correctionPass(BaseBWT * rle_p, vector<uint8_t> seq_i, Parameter
     
     //this is the only parameter that is dynamic right now
     //uint64_t BRANCH_LIMIT = 2*kmerSize;
-    uint64_t BRANCH_LIMIT = 10*kmerSize;
+    //I think this is too high, the benefit is relatively low for a large time increase
+    //uint64_t BRANCH_LIMIT = 10*kmerSize;
+    //TODO: make this a user-parameter in the long run, for now we test for a default
+    //uint64_t BRANCH_LIMIT = 4*kmerSize;
+    uint64_t BRANCH_LIMIT = myParams.BRANCH_LIMIT_FACTOR*kmerSize;
     
     vector<uint64_t> pu = rle_p->countPileup_i(seq_i, kmerSize);
     
@@ -794,6 +799,8 @@ int main(int argc, char* argv[]) {
     myParams.MIN_COUNT = 5;                     //threshold for counting, overrides FRAC*<median of read counts>
     myParams.FRAC = 0.1;                        //the factor applied to the median to determine a dynamic threshold
     myParams.MAX_BRANCH_ATTEMPT_LENGTH = 10000; //maximum length of a gap that we will try to cross; longer can mean more CPU usage
+    //TODO: make user configurable
+    myParams.BRANCH_LIMIT_FACTOR = 4;           //this*kmerSize = the number of branches that the assembly allows before giving up
     myParams.BRANCH_BUFFER_FACTOR = 1.3;        //the factor applied to any bridge gap to allow for insertions
     myParams.TAIL_BUFFER_FACTOR = 1.05;         //the factor applied to any head/tail gap to allow for insertions
     //myParams.MAX_TRIES = 1;                   //DEPRECATED
@@ -808,7 +815,7 @@ int main(int argc, char* argv[]) {
     
     char opt;
     bool helpRequest = false;
-    while((opt = getopt(argc, argv, "hvk:K:p:b:e:m:f:iF:V")) != -1) {
+    while((opt = getopt(argc, argv, "hvk:K:p:b:e:m:f:B:iF:V")) != -1) {
         if(opt == 'h') helpRequest = true;
         else if(opt == 'v') {
             printf("fmlrc version %s\n", VERSION.c_str());
@@ -821,12 +828,13 @@ int main(int argc, char* argv[]) {
         else if(opt == 'e') endID = atoi(optarg);
         else if(opt == 'm') myParams.MIN_COUNT = atoi(optarg);
         else if(opt == 'f') myParams.FRAC = atof(optarg);
-        else if(opt == 'V') myParams.VERBOSE = true;
+        else if(opt == 'B') myParams.BRANCH_LIMIT_FACTOR = atoi(optarg);
         //MAX_BRANCH_ATTEMPT_LENGTH
         //BRANCH_BUFFER_FACTOR
         //TAIL_BUFFER_FACTOR
         else if(opt == 'i') myParams.USE_FM_INDEX = true;
         else if(opt == 'F') myParams.FM_BIT_POWER = atoi(optarg);
+        else if(opt == 'V') myParams.VERBOSE = true;
         else printf("UNHANDLED OPTION: %d %c %s\n", optind, opt, optarg);
     }
     
@@ -841,8 +849,9 @@ int main(int argc, char* argv[]) {
         printf("         -e INT    index of read to end with (default: end of file)\n");
         printf("         -m INT    absolute minimum count to consider a path (default: 5)\n");
         printf("         -f FLOAT  dynamic minimum fraction of median to consider a path (default: .10)\n");
+        printf("         -B INT    set branch limit to <INT>*<k or K> (default: 4)\n");
         printf("         -i        build a sampled FM-index instead of bit arrays\n");
-        printf("         -F INT    FM-index is sampled every 2**<-F> values (default: 8); requires -i\n");
+        printf("         -F INT    FM-index is sampled every 2**<INT> values (default: 8); requires -i\n");
         printf("         -V        verbose output\n");
         return 0;
     }
