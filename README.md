@@ -24,3 +24,7 @@ Here is a partial list of the more useful options of FMLRC:
 * -k - sets the length for the short k-mer pass (default: 21)
 * -K - sets the length for the long K-mer pass (default: 59)
 * -p - sets the number of threads allowed for correction (default: 1)
+
+## Reference
+
+Pre-print on bioRxiv: [Improved long read correction for de novo assembly using an FM-index](http://biorxiv.org/content/early/2016/08/02/067272)
