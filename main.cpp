@@ -1,8 +1,10 @@
 
 //C headers
 #include <stdint.h>
+#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 //C++ headers
 #include <algorithm>
@@ -871,6 +873,11 @@ int main(int argc, char* argv[]) {
     
     //load the BWT into memory
     char * bwtFN = argv[optind];
+    struct stat buffer;   
+    if(stat (bwtFN, &buffer) != 0) {
+        printf("ERROR: BWT file does not exist\n");
+        return 1;
+    }
     BaseBWT * rle;// = new CSA_BWT(bwtFN, myParams.FM_BIT_POWER);
     
     if(myParams.USE_FM_INDEX) rle = new RLE_BWT(bwtFN, myParams.FM_BIT_POWER);
@@ -878,6 +885,10 @@ int main(int argc, char* argv[]) {
     
     //open the fasta file for reading
     char * longReadFN = argv[optind+1];
+    if(strncmp(longReadFN + strlen(longReadFN) - 6, ".fasta", 6) != 0 && strncmp(longReadFN + strlen(longReadFN) - 3, ".fa", 3) != 0) {
+        printf("ERROR: input long reads must be in FASTA format - file must end in '.fasta' or '.fa'\n");
+        return 1;
+    }
     FastaIterator fi(longReadFN);
     
     //open the output fasta file for writing
