@@ -868,27 +868,33 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    //we need to always call this once
-    string_util::initializeStringUtil();
-    
-    //load the BWT into memory
     char * bwtFN = argv[optind];
-    struct stat buffer;   
-    if(stat (bwtFN, &buffer) != 0) {
+    struct stat buffer;
+    if(stat(bwtFN, &buffer) != 0) {
         printf("ERROR: BWT file does not exist\n");
         return 1;
     }
-    BaseBWT * rle;// = new CSA_BWT(bwtFN, myParams.FM_BIT_POWER);
     
-    if(myParams.USE_FM_INDEX) rle = new RLE_BWT(bwtFN, myParams.FM_BIT_POWER);
-    else rle = new CSA_BWT(bwtFN, false); //THE false MEANS WE PROMISE NOT TO QUERY '$'
-    
-    //open the fasta file for reading
     char * longReadFN = argv[optind+1];
+    if(stat(longReadFN, &buffer) != 0) {
+        printf("ERROR: Fasta file does not exist\n");
+        return 1;
+    }
+    
     if(strncmp(longReadFN + strlen(longReadFN) - 6, ".fasta", 6) != 0 && strncmp(longReadFN + strlen(longReadFN) - 3, ".fa", 3) != 0) {
         printf("ERROR: input long reads must be in FASTA format - file must end in '.fasta' or '.fa'\n");
         return 1;
     }
+    
+    //we need to always call this once
+    string_util::initializeStringUtil();
+    
+    //load the BWT into memory
+    BaseBWT * rle;// = new CSA_BWT(bwtFN, myParams.FM_BIT_POWER);
+    if(myParams.USE_FM_INDEX) rle = new RLE_BWT(bwtFN, myParams.FM_BIT_POWER);
+    else rle = new CSA_BWT(bwtFN, false); //THE false MEANS WE PROMISE NOT TO QUERY '$'
+    
+    //open the fasta file for reading
     FastaIterator fi(longReadFN);
     
     //open the output fasta file for writing
