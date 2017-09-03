@@ -11,6 +11,9 @@ The default implementation is requires less CPU time but uses a higher sampled F
 The second implementation is more similar to a traditional sampled FM-index that requires less memory, but at the cost of longer computation times.
 Both implementation handle parallelization by distributing the reads across all available threads.
 
+## Quick-start
+A quick start guide with test data is available on the [FMLRC wiki](https://github.com/holtjma/fmlrc/wiki/Quick-start-test).
+
 ## Installation and Setup
 First, download the latest version of FMLRC and unzip it.  Then simply make the program and run it with the "-h" option to verify it installed.
 
