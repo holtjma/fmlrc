@@ -40,4 +40,4 @@ Here is a partial list of the more useful options of FMLRC:
 
 ## Reference
 
-Pre-print on bioRxiv: [Improved long read correction for de novo assembly using an FM-index](http://biorxiv.org/content/early/2016/08/02/067272)
+[Wang, Jeremy R. and Holt, James and McMillan, Leonard and Jones, Corbin D. FMLRC: Hybrid long read error correction using an FM-index. BMC Bioinformatics, 2018. 19 (1) 50.](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-018-2051-3)
