@@ -21,9 +21,11 @@ int runConverter(Parameters myParams, char * outFN) {
     FILE * inputStream;
     if(myParams.USE_STDIN) {
         inputStream = stdin;
+        printf("[fmlrc-convert] Reading from stdin\n");
     }
     else {
         inputStream = fopen(myParams.filename.c_str(), "r");
+        printf("[fmlrc-convert] Reading from \"%s\"\n", myParams.filename.c_str());
     }
 
     FILE * outputStream = fopen(outFN, "w+");
@@ -52,6 +54,7 @@ int runConverter(Parameters myParams, char * outFN) {
         translator[(unsigned char)c] = x;
         x++;
     }
+    unsigned long symCount[6] = {0};
 
     //first read
     unsigned long readBytes = fread(buffer, 1, BUFFER_SIZE, inputStream);
@@ -71,12 +74,13 @@ int runConverter(Parameters myParams, char * outFN) {
                 //check for invalid character; if it's the new line symbol, we will ignore it
                 if(translator[currSym] == 255) {
                     if(currSym != 10){
-                        printf("UNEXPECTED SYMBOL DETECTED: char: \"%c\", hex: \"%x\"\n", currSym, currSym);
+                        printf("[fmlrc-convert] ERROR - unexpected symbol in input: char: \"%c\", hex: \"%x\"\n", currSym, currSym);
                         return 1;
                     }
                 }
                 else {
                     //we are at the end of the run so handle it
+                    symCount[translator[currSym]] += currCount;
                     while(currCount > 0) {
                         writeByte = translator[currSym] | ((currCount & 0x1F) << 3);
                         fwrite(&writeByte, 1, 1, outputStream);
@@ -98,12 +102,13 @@ int runConverter(Parameters myParams, char * outFN) {
     //handle the last run
     if(translator[currSym] == 255){
         if(currSym != 10){
-            printf("UNEXPECTED SYMBOL DETECTED: char: \"%c\", hex: \"%x\"\n", currSym, currSym);
+            printf("[fmlrc-convert] ERROR - unexpected symbol in input: char: \"%c\", hex: \"%x\"\n", currSym, currSym);
             return 1;
         }
     }
     else {
         //we are at the end of the last run so handle it
+        symCount[translator[currSym]] += currCount;
         while(currCount > 0) {
             writeByte = translator[currSym] | ((currCount & 0x1F) << 3);
             fwrite(&writeByte, 1, 1, outputStream);
@@ -120,12 +125,6 @@ int runConverter(Parameters myParams, char * outFN) {
     fclose(inputStream);
     
     //now that we know the total length, fill in the bytes for our header
-    //char initialWrite[headerSize];
-    //sprintf(initialWrite, "\x93NUMPY\x01\x00%s\x00{\'descr\': \'|u1\', \'fortran_order\': False, \'shape\': (%d,), }", headerHex.c_str(), bytesWritten);
-    //std::ostringstream stringStream;
-    //stringStream << "\x93NUMPY\x01\x00" << headerHex << "\x00{\'descr\': \'|u1\', \'fortran_order\': False, \'shape\': (" << bytesWritten << ",), }";
-    //std::string initialWrite = stringStream.str();
-
     //have to do some special things due to the \x00 characters; might be a better way to do this
     std::string initialWrite = "\x93NUMPY\x01";
     initialWrite.push_back('\0');
@@ -137,10 +136,13 @@ int runConverter(Parameters myParams, char * outFN) {
 
     fseek(outputStream, 0, SEEK_SET);
     fwrite(initialWrite.c_str(), 1, initialWrite.length(), outputStream);
-    printf("init write len: %lu\n", initialWrite.length());
+    //printf("init write len: %lu\n", initialWrite.length());
     //finally close it all out
     fclose(outputStream);
     
+    printf("[fmlrc-convert] symbol counts ($, A, C, G, N, T) = (%ld, %ld, %ld, %ld, %ld, %ld)\n", symCount[0], symCount[1], symCount[2], symCount[3], symCount[4], symCount[5]);
+    printf("[fmlrc-convert] RLE-BWT byte length: %ld\n", bytesWritten);
+    printf("[fmlrc-convert] RLE-BWT conversion complete.\n");
     return 0;
 }
 
@@ -159,14 +161,14 @@ int main(int argc, char* argv[]) {
     while((opt = getopt(argc, argv, "hvfi:")) != -1) {
         if(opt == 'h') helpRequest = true;
         else if(opt == 'v') {
-            printf("fmlrc-convert version %s\n", VERSION.c_str());
+            printf("[fmlrc-convert] version %s\n", VERSION.c_str());
             return 0;
         }
         else if(opt == 'i') {
             myParams.USE_STDIN = false;
             myParams.filename = optarg;
         }else if (opt == 'f') myParams.FORCE_OVERWRITE = true;
-        else printf("UNHANDLED OPTION: %d %c %s\n", optind, opt, optarg);
+        else printf("[fmlrc-convert] UNHANDLED OPTION: %d %c %s\n", optind, opt, optarg);
     }
 
     if(argc-optind < 1 || helpRequest) {
@@ -182,12 +184,12 @@ int main(int argc, char* argv[]) {
     char * bwtFN = argv[optind];
     struct stat buffer;
     if(!myParams.FORCE_OVERWRITE && stat(bwtFN, &buffer) == 0) {
-        printf("ERROR: output file already exists, use -f to force overwrite\n");
+        printf("[fmlrc-convert] ERROR: output file already exists, use -f to force overwrite\n");
         return 1;
     }
 
     if(!myParams.USE_STDIN && stat(myParams.filename.c_str(), &buffer) != 0) {
-        printf("ERROR: input filename does not exist\n");
+        printf("[fmlrc-convert] ERROR: input filename does not exist\n");
         return 1;
     }
 
