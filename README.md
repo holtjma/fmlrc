@@ -14,8 +14,6 @@ Both implementation handle parallelization by distributing the reads across all 
 ## Quick-start
 A full example is available in the `examples` subfolder.  Please refer to the [README](https://github.com/holtjma/fmlrc/blob/converter-tool/example/README.md) for directions.
 
-Additional information can be found in the quick start guide on the [FMLRC wiki](https://github.com/holtjma/fmlrc/wiki/Quick-start-test).
-
 ## Installation and Setup
 First, download the latest version of FMLRC and unzip it.  Then simply make the program and run it with the "-h" option to verify it installed.
 
