@@ -36,4 +36,4 @@ fi
 
 #run fmlrc
 NUM_PROCS=4
-../fmlrc -p $NUM_PROCS -V -e 400 ./ecoli_mc_msbwt/comp_msbwt.npy ./PacBioCLR/PacBio_10kb_CLR.fasta ./corrected_final.fa
+../fmlrc -p $NUM_PROCS -V -e 400 ./ecoli_comp_msbwt.npy ./PacBioCLR/PacBio_10kb_CLR.fasta ./corrected_final.fa
