@@ -12,7 +12,7 @@ The second implementation is more similar to a traditional sampled FM-index that
 Both implementation handle parallelization by distributing the reads across all available threads.
 
 ## Quick-start
-A quick start guide with test data is available on the [FMLRC wiki](https://github.com/holtjma/fmlrc/wiki/Quick-start-test).
+A full example is available in the `examples` subfolder.  Please refer to the [README](https://github.com/holtjma/fmlrc/blob/converter-tool/example/README.md) for directions.
 
 ## Installation and Setup
 First, download the latest version of FMLRC and unzip it.  Then simply make the program and run it with the "-h" option to verify it installed.
@@ -24,7 +24,7 @@ First, download the latest version of FMLRC and unzip it.  Then simply make the 
 ## Building the short-read BWT
 Prior to running FMLRC, a BWT of the short-read sequencing data needs to be constructed.
 Currently, the implementation expects it to be in the Run-Length Encoded (RLE) format of the [*msbwt*](https://github.com/holtjma/msbwt) python package.
-We recommend building the BWT using [*ropebwt2*](https://github.com/lh3/ropebwt2) by following the instructions on [Converting to Run-Length Encoded (RLE) format](https://github.com/holtjma/msbwt/wiki/Converting-to-msbwt's-RLE-format).
+We recommend building the BWT using [*ropebwt2*](https://github.com/lh3/ropebwt2) by following the instructions on [Converting to the fmlrc RLE-BWT format](https://github.com/holtjma/fmlrc/wiki/Converting-to-the-fmlrc-RLE-BWT-format).
 Alternatively, the *msbwt* package can directly build these BWTs ([Constructing the BWT wiki](https://github.com/holtjma/msbwt/wiki/Constructing-the-MSBWT)), but it may be slower and less memory efficient.
 
 ## Running FMLRC

@@ -52,7 +52,7 @@ enum {
 };
 const vector<uint8_t> VALID_CHARS = {1, 2, 3, 5};
 
-const string VERSION = "0.1.2";
+const string VERSION = "1.0.0";
 
 uint64_t calculateMedian(vector<uint64_t> inArray, uint64_t minValue) {
     /*
