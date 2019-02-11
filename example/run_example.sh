@@ -19,11 +19,11 @@ if [ ! -d ${DATADIR} ]; then
 fi
 
 #download short-read ecoli
-if [ ! -f ${DATADIR}/s_6_1.fastq.gz ]; then
-    curl -o ${DATADIR}/s_6_1.fastq.gz http://spades.bioinf.spbau.ru/spades_test_datasets/ecoli_mc/s_6_1.fastq.gz
+if [ ! -f ${DATADIR}/ERR022075_1.fastq.gz ]; then
+    curl -o ${DATADIR}/ERR022075_1.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR022/ERR022075/ERR022075_1.fastq.gz
 fi
-if [ ! -f ${DATADIR}/s_6_2.fastq.gz ]; then
-    curl -o ${DATADIR}/s_6_2.fastq.gz http://spades.bioinf.spbau.ru/spades_test_datasets/ecoli_mc/s_6_2.fastq.gz
+if [ ! -f ${DATADIR}/ERR022075_2.fastq.gz ]; then
+    curl -o ${DATADIR}/ERR022075_2.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR022/ERR022075/ERR022075_2.fastq.gz
 fi
 
 #download long-read ecoli and convert to fasta format
@@ -36,7 +36,7 @@ fi
 #build the bwt
 if [ ! -f ${DATADIR}/ecoli_comp_msbwt.npy ]; then
     mkdir temp
-    gunzip -c ${DATADIR}/s_6_?.fastq.gz | awk "NR % 4 == 2" | sort -T ./temp | tr NT TN | ./ropebwt2/ropebwt2 -LR | tr NT TN | ../fmlrc-convert ${DATADIR}/ecoli_comp_msbwt.npy
+    gunzip -c ${DATADIR}/ERR022075_?.fastq.gz | awk "NR % 4 == 2" | sort -T ./temp | tr NT TN | ./ropebwt2/ropebwt2 -LR | tr NT TN | ../fmlrc-convert ${DATADIR}/ecoli_comp_msbwt.npy
 fi
 
 #run fmlrc
