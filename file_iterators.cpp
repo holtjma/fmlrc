@@ -12,10 +12,11 @@
 
 using namespace std;
 
-FastaIterator::FastaIterator(string fastaFN) {
+FastaIterator::FastaIterator(string fastFN) {
     //open the file
-    this->fastaFN = fastaFN;
-    this->ifp.open(this->fastaFN);
+    this->fastFN = fastFN;
+    this->ifp.open(this->fastFN);
+    this->is_fq = fastFN.at(fastFN.length() - 1) == 'q';
     
     //read the first line so we're in the correct state
     this->isMoreData = (bool)getline(this->ifp, this->nextLine);
@@ -24,6 +25,23 @@ FastaIterator::FastaIterator(string fastaFN) {
 struct LongReadFA FastaIterator::getNextRead() {
     struct LongReadFA ret;
     ret.label = this->nextLine;
+
+    if(this->is_fq) {
+        // reads only sequence data from a FASTQ file, ignoring quality strings
+        ret.label.replace(0,1,">"); // change fastq to fasta format label line
+        
+        // sequence
+        getline(this->ifp, ret.seq);
+        // qual header '+'
+        getline(this->ifp, this->nextLine);
+        // quality string
+        getline(this->ifp, this->nextLine);
+        // next label (if any)
+        this->isMoreData = (bool)getline(this->ifp, this->nextLine);
+
+        return ret;
+    }
+
     vector<string> seqFrags = vector<string>();
     uint64_t seqLen = 0;
     
