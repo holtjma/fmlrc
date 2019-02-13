@@ -18,12 +18,13 @@ struct LongReadFA {
 class FastaIterator {
 private:
     bool isMoreData;
-    string fastaFN;
+    bool is_fq;
+    string fastFN;
     string nextLine;
     ifstream ifp;
 public:
     //constructor
-    FastaIterator(string fastaFN);
+    FastaIterator(string fastFN);
     
     //funcs that matter
     inline bool isMore() { return this->isMoreData;};

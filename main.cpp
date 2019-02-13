@@ -480,7 +480,7 @@ vector<uint8_t> correctionPass(BaseBWT * rle_p, vector<uint8_t> seq_i, Parameter
                                 if(edScores[y].first == minScore) bridgePoints_ed.push_back(vector<uint8_t>(bridgePoints[y].begin(), bridgePoints[y].begin()+edScores[y].second));
                             }
                             
-                            //if(bridgePoints_ed.size() > 0 && minScore > (midPoint-prevFound)*.4) printf("big ED: %llu %llu\n", minScore, midPoint-prevFound);
+                            //if(bridgePoints_ed.size() > 0 && minScore > (midPoint-prevFound)*.4) printf("big ED: %lu %lu\n", minScore, midPoint-prevFound);
                             
                             //TODO: make .4 a constant
                             if(bridgePoints_ed.size() == 0 || minScore > (midPoint-prevFound)*.4) {
@@ -783,7 +783,7 @@ CorrectionResults correctRead_job(int id, BaseBWT * rle_p, LongReadFA inputRead,
         }
     }
     
-    //for(int x = 0; x < c2.size(); x++) printf("%llu ", c2[x]);
+    //for(int x = 0; x < c2.size(); x++) printf("%lu ", c2[x]);
     //printf("\n");
     
     //5 - return result
@@ -877,12 +877,12 @@ int main(int argc, char* argv[]) {
     
     char * longReadFN = argv[optind+1];
     if(stat(longReadFN, &buffer) != 0) {
-        printf("ERROR: Fasta file does not exist\n");
+        printf("ERROR: Fasta/q file does not exist\n");
         return 1;
     }
     
-    if(strncmp(longReadFN + strlen(longReadFN) - 6, ".fasta", 6) != 0 && strncmp(longReadFN + strlen(longReadFN) - 3, ".fa", 3) != 0) {
-        printf("ERROR: input long reads must be in FASTA format - file must end in '.fasta' or '.fa'\n");
+    if(strncmp(longReadFN + strlen(longReadFN) - 6, ".fasta", 6) != 0 && strncmp(longReadFN + strlen(longReadFN) - 3, ".fa", 3) != 0 && strncmp(longReadFN + strlen(longReadFN) - 6, ".fastq", 6) != 0 && strncmp(longReadFN + strlen(longReadFN) - 3, ".fq", 3) != 0) {
+        printf("ERROR: input long reads must be in FASTA or FASTQ format - file must end in '.fasta', '.fa', '.fastq', or '.fq'\n");
         return 1;
     }
     
@@ -894,7 +894,7 @@ int main(int argc, char* argv[]) {
     if(myParams.USE_FM_INDEX) rle = new RLE_BWT(bwtFN, myParams.FM_BIT_POWER);
     else rle = new CSA_BWT(bwtFN, false); //THE false MEANS WE PROMISE NOT TO QUERY '$'
     
-    //open the fasta file for reading
+    //open the fasta/q file for reading
     FastaIterator fi(longReadFN);
     
     //open the output fasta file for writing
@@ -905,7 +905,7 @@ int main(int argc, char* argv[]) {
     ctpl::thread_pool myPool(numThreads);
     
     //skip however many reads we were told to skip
-    if(beginID > 0) printf("Skipping %llu reads...\n", beginID);
+    if(beginID > 0) printf("Skipping %lu reads...\n", beginID);
     uint64_t skippedReadCount = 0;
     while(skippedReadCount < beginID && fi.isMore()) {
         fi.getNextRead();
@@ -935,7 +935,7 @@ int main(int argc, char* argv[]) {
         outRead.label = currResults.label;
         outRead.seq = currResults.correctedSeq;
         fw.writeRead(outRead);
-        if(myParams.VERBOSE) printf("%llu: avg change %lf -> %lf\n", beginID+jobsCompleted, currResults.avgBefore, currResults.avgAfter);
+        if(myParams.VERBOSE) printf("%lu: avg change %lf -> %lf\n", beginID+jobsCompleted, currResults.avgBefore, currResults.avgAfter);
         jobsCompleted++;
         
         //load the next job in
@@ -947,7 +947,7 @@ int main(int argc, char* argv[]) {
         currJobSlot++;
         if(currJobSlot == poolSize){
             currJobSlot = 0;
-            if(!myParams.VERBOSE) printf("Processed %llu reads\n", jobsCompleted);
+            if(!myParams.VERBOSE) printf("Processed %lu reads\n", jobsCompleted);
         }
     }
     
@@ -958,20 +958,20 @@ int main(int argc, char* argv[]) {
         outRead.label = currResults.label;
         outRead.seq = currResults.correctedSeq;
         fw.writeRead(outRead);
-        if(myParams.VERBOSE) printf("%llu: avg change %lf -> %lf\n", beginID+jobsCompleted, currResults.avgBefore, currResults.avgAfter);
+        if(myParams.VERBOSE) printf("%lu: avg change %lf -> %lf\n", beginID+jobsCompleted, currResults.avgBefore, currResults.avgAfter);
         jobsCompleted++;
         
         //increment the slot we are looking at, looping around if necessary
         currJobSlot++;
         if(currJobSlot == poolSize){
             currJobSlot = 0;
-            if(!myParams.VERBOSE) printf("Processed %llu reads\n", jobsCompleted);
+            if(!myParams.VERBOSE) printf("Processed %lu reads\n", jobsCompleted);
         }
     }
     
     //this is the only thing to clean up
     delete rle;
-    printf("Finished processing reads [%llu, %llu)\n", beginID, beginID+jobsCompleted);
+    printf("Finished processing reads [%lu, %lu)\n", beginID, beginID+jobsCompleted);
     
     return 0;
 }
