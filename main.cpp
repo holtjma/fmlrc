@@ -905,7 +905,7 @@ int main(int argc, char* argv[]) {
     ctpl::thread_pool myPool(numThreads);
     
     //skip however many reads we were told to skip
-    if(beginID > 0) printf("Skipping %lu reads...\n", beginID);
+    if(beginID > 0) printf("Skipping %llu reads...\n", beginID);
     uint64_t skippedReadCount = 0;
     while(skippedReadCount < beginID && fi.isMore()) {
         fi.getNextRead();
@@ -935,7 +935,7 @@ int main(int argc, char* argv[]) {
         outRead.label = currResults.label;
         outRead.seq = currResults.correctedSeq;
         fw.writeRead(outRead);
-        if(myParams.VERBOSE) printf("%lu: avg change %lf -> %lf\n", beginID+jobsCompleted, currResults.avgBefore, currResults.avgAfter);
+        if(myParams.VERBOSE) printf("%llu: avg change %lf -> %lf\n", beginID+jobsCompleted, currResults.avgBefore, currResults.avgAfter);
         jobsCompleted++;
         
         //load the next job in
@@ -947,7 +947,7 @@ int main(int argc, char* argv[]) {
         currJobSlot++;
         if(currJobSlot == poolSize){
             currJobSlot = 0;
-            if(!myParams.VERBOSE) printf("Processed %lu reads\n", jobsCompleted);
+            if(!myParams.VERBOSE) printf("Processed %llu reads\n", jobsCompleted);
         }
     }
     
@@ -958,20 +958,20 @@ int main(int argc, char* argv[]) {
         outRead.label = currResults.label;
         outRead.seq = currResults.correctedSeq;
         fw.writeRead(outRead);
-        if(myParams.VERBOSE) printf("%lu: avg change %lf -> %lf\n", beginID+jobsCompleted, currResults.avgBefore, currResults.avgAfter);
+        if(myParams.VERBOSE) printf("%llu: avg change %lf -> %lf\n", beginID+jobsCompleted, currResults.avgBefore, currResults.avgAfter);
         jobsCompleted++;
         
         //increment the slot we are looking at, looping around if necessary
         currJobSlot++;
         if(currJobSlot == poolSize){
             currJobSlot = 0;
-            if(!myParams.VERBOSE) printf("Processed %lu reads\n", jobsCompleted);
+            if(!myParams.VERBOSE) printf("Processed %llu reads\n", jobsCompleted);
         }
     }
     
     //this is the only thing to clean up
     delete rle;
-    printf("Finished processing reads [%lu, %lu)\n", beginID, beginID+jobsCompleted);
+    printf("Finished processing reads [%llu, %llu)\n", beginID, beginID+jobsCompleted);
     
     return 0;
 }
