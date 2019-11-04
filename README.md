@@ -12,7 +12,7 @@ The second implementation is more similar to a traditional sampled FM-index that
 Both implementation handle parallelization by distributing the reads across all available threads.
 
 ## Quick-start
-A full example is available in the `examples` subfolder.  Please refer to the [README](https://github.com/holtjma/fmlrc/blob/converter-tool/example/README.md) for directions.
+A full example is available in the `example` subfolder.  Please refer to the [README](https://github.com/holtjma/fmlrc/tree/master/example) for directions.
 
 ## Installation and Setup
 First, download the latest version of FMLRC and unzip it.  Then simply make the program and run it with the "-h" option to verify it installed.
