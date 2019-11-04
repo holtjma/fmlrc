@@ -5,9 +5,9 @@
 ```bash
 git clone https://github.com/holtjma/fmlrc.git
 ```
-2. Change into the fmlrc examples directory:
+2. Change into the fmlrc example directory:
 ```bash
-cd fmlrc/examples
+cd fmlrc/example
 ```
 3. Run the examples script.  This will automatically install ropebwt2 to a local path, download short- and long-read _E. coli_ data, build the multi-string BWT using ropebwt2 and fmlrc-convert, and lastly run use fmlrc to correct the first 400 reads in the long-read data:
 ```bash
