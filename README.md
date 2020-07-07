@@ -1,4 +1,10 @@
 # FMLRC
+## Update - Version 2
+FMLRC has been succeeded by `fmlrc2` ([https://github.com/HudsonAlpha/rust-fmlrc](https://github.com/HudsonAlpha/rust-fmlrc)). 
+Preliminary results show `fmlrc2` has near identical results, but runs in <50% of the time. 
+It is also implemented in Rust, leveraging the cargo ecosystem. 
+Assuming the results are satisfactory for your use case, we recommend switching to `fmlrc2` for the reduced run-time and to receive future updates to the algorithm.
+
 ## Introduction
 FMLRC, or FM-index Long Read Corrector, is a tool for performing hybrid correction of long read sequencing using the BWT and FM-index of short-read sequencing data.
 Given a BWT of the short-read sequencing data, FMLRC will build an FM-index and use that as an implicit de Bruijn graph.
